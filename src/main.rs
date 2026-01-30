@@ -1,11 +1,11 @@
-
+// TODO integration propre de discord
 use reqwest;
 use scraper::{Html, Selector};
 use serde::Serialize;
 use std::sync::{Arc, Mutex};
 
 #[derive(Serialize, Debug)]
-struct VTuber {
+struct VTuber { 
     name: String,
     status: String,
 }
@@ -18,7 +18,9 @@ use serenity::{
 };
 
 
-// Fonction récupère les VTubers d'une page donnée
+// Fonction retournant un vecteur contenant la liste des vtubers en fonction de la page en entrée
+// précondition url et statue du vtuber
+// sortie vecteur avec structure
 async fn scrape_category(url: &str, status: &str) -> Vec<VTuber> {
 
     let body = reqwest::get(url)
@@ -29,7 +31,6 @@ async fn scrape_category(url: &str, status: &str) -> Vec<VTuber> {
         .unwrap();
 
     let document = Html::parse_document(&body);
-
     let tr_selector = Selector::parse("tr").unwrap();
     let td_selector = Selector::parse("td").unwrap();
     let a_selector = Selector::parse("a").unwrap();
@@ -37,7 +38,7 @@ async fn scrape_category(url: &str, status: &str) -> Vec<VTuber> {
     let mut vtubers = Vec::new();
 
     for row in document.select(&tr_selector) {
-
+ 
         let mut tds = row.select(&td_selector);
         let _icon = tds.next();
         let name_td = tds.next();
@@ -65,6 +66,7 @@ struct Handler {
 }
 
 #[async_trait]
+
 impl EventHandler for Handler {
 
     async fn ready(&self, _: Context, ready: Ready) {
@@ -77,13 +79,11 @@ impl EventHandler for Handler {
 
         if content == "!help" {
             let help = "
-🤖 Ovulation Bot Commands
-
+🤖 Ovulation Bot Commandes
 !vtubers        -> Stats
 !status NAME   -> Statut d'un vtuber
 !help          -> Aide
-!list(all, ovulating, fertile or menstruating) -> for all menstruating vtubers 
-";
+!list(all, ovulating, fertile or menstruating)";
             let _ = msg.channel_id.say(&ctx.http, help).await;
             return;
         }
